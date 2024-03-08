@@ -88,6 +88,24 @@ def reduce_answer(question: str, answer: str):
     return proxy_gpt.send_request([prompt.format(question, answer)])
 
 
+def is_answer_correct(answers: list[str]):
+    if len(answers) == 0 or len(answers[0]) == 0:
+        return False
+
+    answer = '\n'.join(answers)
+    if "В тексте рассказано" in answer:
+        return False
+    if "В тексте нет информации" in answer:
+        return False
+    if "Нет информации в тексте" in answer:
+        return False
+    if "Пустая строка" in answer:
+        return False
+
+    return True
+
+
+
 def get_questions_answers_pairs(interview: str, interviewer_id="0"):
     phrase_template = r'Speaker (\d*): (.+)'
     dialog_phrases = interview.split('\n\n')
@@ -117,44 +135,24 @@ def get_questions_answers_pairs(interview: str, interviewer_id="0"):
 
             answers = ["Ошибка при формировании ответа на вопрос"]
 
-            for _ in range(3):
+            for _ in range(6):
                 try:
                     answers = get_answers(part_of_interview, [potential_question])
-                    break
+
+                    if is_answer_correct(answers):
+                        break
+                    else: continue
+
                 except Exception as e:
                     print(e)
 
-            if len(answers) == 0 or len(answers[0]) == 0:
-                for _ in range(3):
-                    try:
-                        answers = get_answers(part_of_interview, [potential_question])
-                        break
-                    except Exception as e:
-                        print(e)
-                if len(answers) == 0 or len(answers[0]) == 0:
-                    continue
+            #Если даже после многочисленных прогонов выдал результат нулевой длины
+            if not is_answer_correct(answers):
+                continue
 
             answer = '\n'.join(answers)
             if len(answer.split(' ')) > 40:
                 answer = reduce_answer(potential_question, answer)
-
-            if "В тексте рассказано" in answer:
-                for _ in range(3):
-                    try:
-                        answers = get_answers(part_of_interview, [potential_question])
-                        answer = '\n'.join(answers)
-                        break
-                    except Exception as e:
-                        print(e)
-
-            if "В тексте нет информации для ответа на данный вопрос" in answer:
-                for _ in range(3):
-                    try:
-                        answers = get_answers(part_of_interview, [potential_question])
-                        answer = '\n'.join(answers)
-                        break
-                    except Exception as e:
-                        print(e)
 
             questions_answers_pairs.append((potential_question, answer))
 
@@ -164,19 +162,19 @@ def get_questions_answers_pairs(interview: str, interviewer_id="0"):
 
 
 def main():
-    for i in range(6, 7):
-        start_time = datetime.datetime.now()
-        file_name = "Интервью_Лехе_{}.txt".format(i)
-        data = get_interview_from_file("test_data_for_dialog_summarizator/{}".format(file_name))
+    # for i in range(6, 7):
+    start_time = datetime.datetime.now()
+    file_name = "никита_экопси.txt"
+    data = get_interview_from_file("texts-for-summary/{}".format(file_name))
 
-        questions_answers = get_questions_answers_pairs(data)
+    questions_answers = get_questions_answers_pairs(data, '1')
 
-        print("Время обработки интервью : {}".format(datetime.datetime.now() - start_time))
-        df = pd.DataFrame({
-            'Вопрос': [i[0] for i in questions_answers],
-            'Ответ': [i[1] for i in questions_answers],
-            'Оценка ответа': [''] * len(questions_answers)})
-        df.to_excel('dialog-sum-results/Суммаризация_{}.xlsx'.format(file_name), index=False)
+    print("Время обработки интервью : {}".format(datetime.datetime.now() - start_time))
+    df = pd.DataFrame({
+        'Вопрос': [i[0] for i in questions_answers],
+        'Ответ': [i[1] for i in questions_answers],
+        'Оценка ответа': [''] * len(questions_answers)})
+    df.to_excel('summary-results/Суммаризация_{}.xlsx'.format(file_name), index=False)
 
 
 if __name__ == "__main__":
