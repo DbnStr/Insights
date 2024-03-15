@@ -8,6 +8,7 @@ SUMMARY_REQUEST = 'Сделай краткое резюме'
 BACK_TO_START_MENU = 'Вернуться на главный экран'
 YOU_ARE_IN_START_MENU = 'Вы на главном экране'
 SUMMARY_FILE_REQUEST = 'Отправьте текст для резюме в сообщении или в форматах txt'
+TRANSCRIPTION_FILE_REQUEST = 'Отправьте видео/аудио для перевода в текст'
 
 #Общие ошибки
 UNKNOWN_COMMAND_ERROR = 'Неизвестная команда'
@@ -25,3 +26,9 @@ DOC_FORMAT = 'application/vnd.openxmlformats-officedocument.wordprocessingml.doc
 MP4_FORMAT = 'video/mp4'
 M4A_FORMAT = 'audio/x-m4a'
 MP3_FORMAT = 'audio/mpeg'
+
+#Конфигурационные данные
+API_ID = 28020262
+API_HASH = 'cb5c33b77f266ad18ef29d7fc4f10a2a'
+
+TRANSCRIPTION_SERVER_URL = "0.0.0.0:3389"
