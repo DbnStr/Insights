@@ -7,11 +7,17 @@ TRANSCRIPTION_REQUEST = 'Переведи аудио/видео в текст'
 SUMMARY_REQUEST = 'Сделай краткое резюме'
 BACK_TO_START_MENU = 'Вернуться на главный экран'
 YOU_ARE_IN_START_MENU = 'Вы на главном экране'
-SUMMARY_FILE_REQUEST = 'Отправьте текст для резюме в сообщении или в форматах txt'
-TRANSCRIPTION_FILE_REQUEST = 'Отправьте видео/аудио для перевода в текст'
+SUMMARY_FILE_REQUEST = 'Отправьте текст для резюме. Поддерживаемые форматы:\n' \
+                       '- txt'
+TRANSCRIPTION_FILE_REQUEST = 'Отправьте видео/аудио для перевода в текст. Поддерживаемые форматы:\n' \
+                             '- mp3' \
+                             '- голосовое сообщение'
 
 #Общие ошибки
 UNKNOWN_COMMAND_ERROR = 'Неизвестная команда'
+
+#Сообщения при суммаризации
+SUCCESS_LOAD_FILE = "Файл успешно загружен и принят в обработку. Ожидайте результат"
 
 #Ошибки при загрузки файла
 FILE_DATA_ERROR = 'Файл содержит некорректную информацию'
@@ -31,4 +37,7 @@ MP3_FORMAT = 'audio/mpeg'
 API_ID = 28020262
 API_HASH = 'cb5c33b77f266ad18ef29d7fc4f10a2a'
 
+#Конфигурационные данные о сервере транскрибации
+TRANSCRIPTION_SERVER_IP_ADDRESS = '34.41.250.251'
+TRANSCRIPTION_SERVER_PORT = '3389'
 TRANSCRIPTION_SERVER_URL = "0.0.0.0:3389"

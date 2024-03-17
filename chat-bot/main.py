@@ -91,6 +91,8 @@ async def process_file_for_summary(message: types.Message, state: FSMContext):
                             reply_markup=start_menu_keyboard)
         return
 
+    await message.reply(SUCCESS_LOAD_FILE)
+
     text = text.replace('\r', '')
 
     questions_answers = get_questions_answers_pairs(text)
@@ -110,17 +112,34 @@ async def process_file_for_summary(message: types.Message, state: FSMContext):
 
 @router.message(States.WAITING_TRANSCRIPTION_FILE)
 async def process_transcription_file(message: types.Message, state: FSMContext):
-    file_id = message.audio.file_id
+    if message.voice == None and not (message.audio != None and message.audio.mime_type == MP3_FORMAT):
+        await state.clear()
+        await message.reply(FILE_FORMAT_ERROR,
+                            reply_markup=start_menu_keyboard)
 
-    start_time = datetime.datetime.now()
-    uvloop.install()
-    file_name = message.audio.file_name
-    async with pyrogram.Client("custDevAIClient", api_id=API_ID, api_hash=API_HASH) as app:
-        await app.download_media(file_id, file_name=file_name)
-        print(datetime.datetime.now() - start_time)
+    #Голосое сообшение
+    if message.voice != None:
+        file_id = message.voice.file_id
+        file_name = f'{message.from_user.username}_{datetime.datetime.now()}.mp3'
+        await download_file(file_id, file_name)
+    #MP3
+    if message.audio != None and message.audio.mime_type == MP3_FORMAT:
+        file_id = message.audio.file_id
+        file_name = message.audio.file_name
 
-    remote_file_name = send_media_to_recognition('chat-bot/downloads/{}'.format(file_name))
-    print(remote_file_name)
+    try:
+        start_time = datetime.datetime.now()
+        uvloop.install()
+        download_file(file_id, file_name)
+        print(f"Время загрузки файла: {datetime.datetime.now() - start_time}")
+    except Exception as e:
+        print(f'Ошибка во время загрузки: {e}')
+        await message.reply(FILE_PROCESS_ERROR,
+                            reply_markup=start_menu_keyboard)
+        return
+
+    remote_file_name = send_media_to_recognition('downloads/{}'.format(file_name))
+    print("Имя файла с транскрибацией на удаленном сервере : {}".format(remote_file_name))
 
     while True:
         res = get_recognition_result(remote_file_name)
@@ -136,6 +155,10 @@ async def process_transcription_file(message: types.Message, state: FSMContext):
     await bot.send_document(message.from_user.id, file, reply_markup=start_menu_keyboard)
 
 
+async def download_file(file_id, local_file_name):
+    async with pyrogram.Client("custDevAIClient", api_id=API_ID, api_hash=API_HASH) as app:
+        await app.download_media(file_id, file_name=local_file_name)
+
 def save_file(path, text):
     file = open(path, "w+")
     file.write(text)
@@ -143,7 +166,7 @@ def save_file(path, text):
 
 
 def send_media_to_recognition(file_path):
-    print("Sending file to recognition {}".format(file_path))
+    print(f'Sending file to recognition. File path : {file_path}')
     headers = {
         "accept": "application/json"
     }
@@ -154,8 +177,10 @@ def send_media_to_recognition(file_path):
         "count_speakers": "2"
     }
     files = {'file': (file_path, open(file_path, 'rb'), 'audio/mpeg')}
+    url = f'http://{TRANSCRIPTION_SERVER_IP_ADDRESS}:{TRANSCRIPTION_SERVER_PORT}/file/upload-file'
 
-    res = requests.post(url="http://34.41.250.251:3389/file/upload-file", params=params, files=files, headers=headers)
+    res = requests.post(url=url, params=params, files=files, headers=headers)
+
     return json.loads(res.text)['request']['path']
 
 
@@ -167,8 +192,9 @@ def get_recognition_result(file_name):
         "path": file_name,
         "format": "txt"
     }
+    url = f'http://{TRANSCRIPTION_SERVER_IP_ADDRESS}:{TRANSCRIPTION_SERVER_PORT}/file/download'
 
-    res = requests.get(url="http://34.41.250.251:3389/file/download", params=params, headers=headers)
+    res = requests.get(url=url, params=params, headers=headers)
 
     print("recognition result for {}:\n{}".format(file_name, res.text))
 
