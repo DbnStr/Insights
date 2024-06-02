@@ -53,7 +53,7 @@ async def send_welcome(message: types.Message, state: FSMContext):
 
 @dp.message(States.START)
 async def send_mes(message: types.Message, state: FSMContext):
-    await message.reply("На данный момент бот приостановлен по причине отсутствия средств на серверные мощности :(")
+    await message.reply("Сейчас я не работаю, так как деньги на серверные мощности закончились :(")
 
 # @dp.message(F.text == Constants.SUMMARY_REQUEST)
 # async def process_summary_req(message: types.Message, state: FSMContext):
