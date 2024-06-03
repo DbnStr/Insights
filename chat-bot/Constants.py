@@ -3,6 +3,7 @@ START_MESSAGE = "Привет!\nЯ бот для составления тран
 BACK_TO_MAIN_MENU = 'Вы вернулись на главный экран!'
 TRANSCRIPTION_REQUEST = 'Переведи аудио/видео в текст'
 SUMMARY_REQUEST = 'Сделай краткое резюме'
+REPORT_REQUEST = 'Создать отчет'
 BACK_TO_START_MENU = 'Вернуться на главный экран'
 YOU_ARE_IN_START_MENU = 'Вы на главном экране'
 SUMMARY_FILE_REQUEST = 'Отправьте текст для резюме. Поддерживаемые форматы:\n' \
