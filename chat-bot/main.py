@@ -48,7 +48,7 @@ bot = Bot(API_TOKEN, parse_mode=ParseMode.HTML)
 @dp.message(CommandStart())
 async def send_welcome(message: types.Message, state: FSMContext):
     await state.set_state(States.START)
-    await message.reply(START_MESSAGE)
+    await message.reply(START_MESSAGE, reply_markup=start_menu_keyboard)
 
 
 @dp.message(States.START)
