@@ -14,11 +14,11 @@ def send_request(messages):
         conversation_history.append({"role" : "user", "content" : m})
 
     chat_completion = client.chat.completions.create(
-        model="gpt-3.5-turbo-0125", messages=conversation_history
+        model="gpt-4o-mini", messages=conversation_history
     )
     res_mes = chat_completion.choices[0].message.content
     # print('Запрос: {}'.format(message))
-    print('Ответ от бота: {}'.format(res_mes))
+    # print('Ответ от бота: {}'.format(res_mes))
     print('Запрос выполнен успешно!\nОбщее число потра'
           'ченных токенов: {}'.format(chat_completion.usage.total_tokens))
     return res_mes
