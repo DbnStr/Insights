@@ -28,6 +28,8 @@ from report_generator import generate_report, create_excel_with_wrapped_text
 import Constants
 from Keyboards import *
 
+import summarize_utils
+
 logging.basicConfig(level=logging.INFO)
 
 API_TOKEN = "6884733501:AAEeffzK8uGFrdBiluIgC3ZFlAmUqAgMFuo"
@@ -119,21 +121,28 @@ async def process_file_for_summary(message: types.Message, state: FSMContext):
         return
 
     await message.reply(SUCCESS_LOAD_FILE)
-
     text = text.replace('\r', '')
 
+    # Получаем пары вопрос-ответ из текста
     questions_answers = get_questions_answers_pairs(text)
 
-    file_path = f'{SUMMARY_RESULTS_DIR_NAME}/суммаризация_{file_name}.xlsx'
-    df = pd.DataFrame({
-        'Вопрос': [i[0] for i in questions_answers],
-        'Ответ': [i[1] for i in questions_answers],
-        'Оценка ответа': [''] * len(questions_answers)})
-    df.to_excel(file_path, index=False)
+    # Формируем путь к файлу результата
+    user_id = message.from_user.id
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file_path = f'{SUMMARY_RESULTS_DIR_NAME}/суммаризация_{user_id}_{current_time}.xlsx'
+    
+    # Создаем Excel-файл с результатами
+    summarize_utils.create_excel_with_wrapped_text(file_path, questions_answers)
 
-    content = open(file_path, "rb").read()
-    file = BufferedInputFile(content,
-                             filename=f"суммаризация_{file_name}.xlsx")
+    # Отправляем файл пользователю
+    with open(file_path, "rb") as f:
+        content = f.read()
+    
+    file = BufferedInputFile(
+        content,
+        filename=f"суммаризация_{current_time}.xlsx"
+    )
+    
     await state.clear()
     await bot.send_document(message.from_user.id, file, reply_markup=start_menu_keyboard)
 

@@ -3,6 +3,7 @@ import pandas as pd
 import openpyxl
 from openpyxl.styles import Alignment
 from templates import templates
+
 def generate_report(template_type, text):
     base_command = 'Ответь кратко, по делу и без воды. Не выделяй ничего жирным. Ответ ищи в тексту, который я тебе ранее отправил.'
     template = templates[template_type]

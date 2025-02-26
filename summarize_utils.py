@@ -4,6 +4,8 @@ import re
 import time
 
 import pandas as pd
+import openpyxl
+from openpyxl.styles import Alignment
 
 import proxy_gpt
 
@@ -159,6 +161,24 @@ def get_questions_answers_pairs(interview: str, interviewer_id="0"):
             print(questions_answers_pairs)
 
     return questions_answers_pairs
+
+
+def create_excel_with_wrapped_text(file_name, columns):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    
+    ws.append(["Вопрос", "Ответ"])
+    
+    for row_idx, (col1_text, col2_text) in enumerate(columns, start=2):
+        cell = ws.cell(row=row_idx, column=1, value=col1_text)
+        cell.alignment = Alignment(wrapText=True)
+        cell = ws.cell(row=row_idx, column=2, value=col2_text)
+        cell.alignment = Alignment(wrapText=True)
+    
+    ws.column_dimensions['A'].width = 40
+    ws.column_dimensions['B'].width = 80
+    
+    wb.save(file_name)
 
 
 def main():

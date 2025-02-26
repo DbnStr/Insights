@@ -53,7 +53,7 @@ API_ID = 28020262
 API_HASH = 'cb5c33b77f266ad18ef29d7fc4f10a2a'
 
 # Конфигурационные данные о сервере транскрибации
-TRANSCRIPTION_SERVER_IP_ADDRESS = '34.136.128.12'
+TRANSCRIPTION_SERVER_IP_ADDRESS = '176.99.131.129'
 TRANSCRIPTION_SERVER_PORT = '3389'
 
 # Названия директория
