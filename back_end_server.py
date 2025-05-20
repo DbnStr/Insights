@@ -5,8 +5,12 @@ import datetime
 import os
 import uuid
 import base64
+import transcribe_utils
+from flask_cors import CORS
+from time import sleep
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/getReport', methods=['POST'])
 def get_report():
@@ -42,7 +46,6 @@ def get_report():
 @app.route('/getSummary', methods=['POST'])
 def get_summary():    
     text = request.json.get('text', '')
-    print(text)
     interviewer_id = request.json.get('interviewer_id', '1')
     
     # Получаем пары вопрос-ответ из текста
@@ -68,6 +71,44 @@ def get_summary():
     
     return jsonify({
         'excelFile': encoded_file
+    })
+
+@app.route('/transcribe', methods=['POST'])
+def transcribe():    
+    # Проверяем существование директории
+    if not os.path.exists('transcribe-files'):
+        os.makedirs('transcribe-files')
+        
+    # Декодируем base64 файл и сохраняем его
+    file = request.files['file']
+    file_path = f'transcribe-files/transcribe_{datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.mp3'
+    file.save(file_path)
+
+    remote_file_name = transcribe_utils.send_media_to_recognition(file_path)
+    print("Имя файла с транскрибацией на удаленном сервере : {}".format(remote_file_name))
+
+    while True:
+        status, text_with_diarization, text_without_diarization = transcribe_utils.get_recognition_result(remote_file_name)
+        if status == 'not ready':
+            sleep(10)
+        else:
+            text = transcribe_utils.improve_transcription(text_with_diarization, text_without_diarization)
+            break
+    
+    # Создаем временный текстовый файл
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file_path = f'transcribe-results/transcribe_{current_time}.txt'
+    
+    # Записываем текст в файл
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(text)
+    
+    # Читаем файл и кодируем в base64
+    with open(file_path, "rb") as file:
+        encoded_file = base64.b64encode(file.read()).decode('utf-8')
+    
+    return jsonify({
+        'resFile': encoded_file
     })
 
     

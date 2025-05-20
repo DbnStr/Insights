@@ -29,6 +29,8 @@ import Constants
 from Keyboards import *
 
 import summarize_utils
+import transcribe_utils
+import proxy_gpt
 
 logging.basicConfig(level=logging.INFO)
 
@@ -176,15 +178,15 @@ async def process_transcription_file(message: types.Message, state: FSMContext):
                             reply_markup=start_menu_keyboard)
         return
 
-    remote_file_name = send_media_to_recognition('downloads/{}'.format(file_name))
+    remote_file_name = transcribe_utils.send_media_to_recognition('downloads/{}'.format(file_name))
     print("Имя файла с транскрибацией на удаленном сервере : {}".format(remote_file_name))
 
     while True:
-        res = get_recognition_result(remote_file_name)
-        if res['status'] == 'not ready':
-            sleep(5)
+        status, text_with_diarization, text_without_diarization = transcribe_utils.get_recognition_result(remote_file_name)
+        if status == 'not ready':
+            sleep(10)
         else:
-            text = res['text']
+            text = transcribe_utils.improve_transcription(text_with_diarization, text_without_diarization)
             break
 
     file = BufferedInputFile(bytes(text.encode('utf-8')),
@@ -249,43 +251,6 @@ def save_file(path, text):
     file.close()
 
 
-def send_media_to_recognition(file_path):
-    print(f'Sending file to recognition. File path : {file_path}')
-    headers = {
-        "accept": "application/json"
-    }
-    params = {
-        "separate_vocal": "no",
-        "format": "audio",
-        "model_name": "yandex",
-        "count_speakers": "2"
-    }
-    files = {'file': (file_path, open(file_path, 'rb'), 'audio/mpeg')}
-    url = f'http://{TRANSCRIPTION_SERVER_IP_ADDRESS}:{TRANSCRIPTION_SERVER_PORT}/file/upload-file'
-    print(url)
-
-    res = requests.post(url=url, params=params, files=files, headers=headers)
-
-    return json.loads(res.text)['request']['path']
-
-
-def get_recognition_result(file_name):
-    headers = {
-        "accept": "application/json"
-    }
-    params = {
-        "path": file_name,
-        "format": "txt"
-    }
-    url = f'http://{TRANSCRIPTION_SERVER_IP_ADDRESS}:{TRANSCRIPTION_SERVER_PORT}/file/download'
-
-    res = requests.get(url=url, params=params, headers=headers)
-
-    print("recognition result for {}:\n{}".format(file_name, res.text))
-
-    return json.loads(res.text)
-
-
 async def get_text_from_txt_file(file_id):
     file_in_io = io.BytesIO()
     file = await bot.get_file(file_id)
@@ -314,4 +279,4 @@ async def main() -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    asyncio.run(main())
+    asyncio.run(main(), port=3333)

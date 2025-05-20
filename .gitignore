@@ -1,6 +1,9 @@
 /summary-results
 /reports
 /texts-for-summary
+/transcribe-files
+/transcribe-results
+/downloads
 unknown_errors.txt
 chat-bot/custDevAIClient.session
 chat-bot/downloads
