@@ -98,6 +98,10 @@ def transcribe():
     # Создаем временный текстовый файл
     current_time = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     file_path = f'transcribe-results/transcribe_{current_time}.txt'
+
+    # Проверяем существование директории
+    if not os.path.exists('transcribe-results'):
+        os.makedirs('transcribe-results')
     
     # Записываем текст в файл
     with open(file_path, 'w', encoding='utf-8') as f:
