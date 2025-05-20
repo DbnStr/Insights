@@ -1,9 +1,6 @@
 import time
 
 from openai import OpenAI
-from PIL import Image
-import io
-import requests
 
 def send_request(messages):
     time.sleep(2)
